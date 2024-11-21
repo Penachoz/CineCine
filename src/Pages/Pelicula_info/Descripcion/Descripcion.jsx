@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import './Descripcion.css';
-import Calendario from './Calendario/Calendario.jsx';
+
 import MovieTrailer from './Trailer/Trailer.jsx';
 import { useSelector } from 'react-redux';
 import cinePlusApi from '../../../api/cinePlusApi.js';
@@ -25,149 +25,74 @@ const defCredits = { crew: [{ job: 'Director', name: 'No disponible' }] };
 
 const defVideos = {
     "results": [
-      {
-        "key": "dQw4w9WgXcQ",
-      }
+        {
+            "key": "dQw4w9WgXcQ",
+        }
     ]
-  }
+}
 
 
 const Descripcion = ({ idPelicula, pelicula = defPelicula, credits = defCredits, videos = defVideos }) => {
     const ordendecrearenviada = useRef(false);
-
-    const {status} = useSelector(state => state.auth);
+    const { status, email } = useSelector((state) => state.auth);
+    //const { status, user } = useSelector(state => state.auth); // Asegúrate de tener el usuario y su estado
     const director = credits.crew ? credits.crew.find(crew => crew.job === 'Director') : { name: 'No disponible' };
 
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState({message: ""});
-    const [funcionStatus, setFuncionStatus] = useState(null);
-    const [dimension, setDimension] = React.useState("");
-    const [doblaje, setDoblaje] = React.useState("");
-    const [fechaCalendario , setFechaCalendario] = React.useState({dia: fecha.getDate(), mes: fecha.getMonth() + 1, año: fecha.getFullYear()});
-    const [disp2d, setDisp2d] = useState(false);
-    const [disp3d, setDisp3d] = useState(false);
-    const [dispSub, setDispSub] = useState(false);
-    const [dispDob, setDispDob] = useState(false);
-    const [diasDisponibles, setDiasDisponibles] = useState([]);
-    const [funciones, setFunciones] = useState([]);
+    const [error, setError] = useState({ message: "" });
+    const [newReview, setNewReview] = useState(""); // Texto de la nueva review
+    const [reviews, setReviews] = useState([]); // Lista de reviews
 
-    const obtenerFunciones = async () => {
+    // Obtener las últimas 5 reviews
+    const obtenerReviews = async () => {
         try {
-            const response = await cinePlusApi.get('/obtenerFunciones/' + idPelicula);
-            console.log(response.data);
+            const response = await cinePlusApi.get(`/reviews/pelicula/${idPelicula}`);
+            console.log(response);
+            console.log(1);
+            console.log(response.data); // Verifica la estructura de la respuesta
+    
+            setReviews(response.data.slice(-5)); // Asegúrate de que response.data sea un arreglo
+    
             setLoading(false);
-            return response.data;
+        } catch (err) {
+            setError({ message: "Error al cargar las reviews" });
+            setLoading(false);
         }
-        catch (error) {
-            console.error(error.message);
-            setError({message: 'Error al obtener las funciones de la película'});
-            return [];
-        }
-    }
-    const crearFunciones = async (cantidad, idPeliculaActual) => {
+    };
+    
+    useEffect(() => {
+        console.log("Reviews actualizadas:", reviews); // Esto se ejecutará cada vez que reviews cambie
+    }, [reviews]);  // Este useEffect depende de `reviews`, por lo que se ejecuta cuando cambia
+    
 
-        const fecha = new Date();
-        const promises = [];
-    
-        for (let j = 0; j < cantidad; j++) {
-            const sillas = [];
-            let precio = Math.floor(Math.random() * 10000 + 10000);
-            for (let i = 0; i < 128; i++) {
-                sillas.push({ estado: Math.random() < 0.3, precio: precio });
-            }
-            
-            const funcionData = {
-                idPelicula: idPeliculaActual,
-                hora: Math.floor(Math.random() * 25).toString().concat(Math.random() >= 0.3 ? ":00" : ":30"),
-                dia: Math.floor(Math.random() * 29),
-                mes: Math.floor(Math.random() * (3)) + fecha.getMonth()+1,
-                año: fecha.getFullYear(),
-                dimension: Math.random() > 0.5 ? '2d' : '3d',
-                doblaje: Math.random() > 0.5 ? 'Sub' : 'Dob',
-                sillas: sillas
-            };
-            promises.push(cinePlusApi.post('/crearFuncion', funcionData));
+    // Publicar una nueva review
+    const publicarReview = async () => {
+        if (!status) {
+            setError({ message: "Debes iniciar sesión para publicar una review." });
+            return;
         }
-    
+
         try {
-            const responses = await Promise.all(promises);
-            responses.forEach(response => console.log(response.data));
-        } catch (error) {
-            console.error(error);
+            console.log(email);
+            console.log(newReview);
+            console.log(idPelicula);
+            const response = await cinePlusApi.post("/reviews/crearReview", {
+                peliculaId: idPelicula,
+                usuarioEmail: email, 
+                contenido: newReview,
+            });
+            setReviews(prev => [...prev.slice(-4), response.data]); // Mantener solo las últimas 5 reviews
+            setNewReview(""); // Limpiar el campo de texto
+        } catch (err) {
+            setError({ message: "Error al publicar la review" });
         }
-    }
-    
+    };
+
     useEffect(() => {
-        obtenerFunciones().then((funciones)=>{setFunciones(funciones);console.log(funciones)}).catch((error)=>{console.error(error);setError(error)});
-    }, []); 
+        obtenerReviews(); // Cargar las reviews al montar el componente
+        console.log(reviews); 
+    }, [idPelicula]);
 
-    useEffect(() => {   
-    if (!loading){
-        console.log(funciones.length);
-        if (funciones.length < 40 && !ordendecrearenviada.current && error.message != 'Error al obtener las funciones de la película') {
-            setFuncionStatus('Creando funciones de forma aleatoria, esto puede tardar unos minutos...');
-            crearFunciones(40 - funciones.length, idPelicula).then(() => {obtenerFunciones().then((funciones)=>{
-                setFunciones(funciones)
-                setFuncionStatus(null);
-            });});
-
-            ordendecrearenviada.current = true;
-        }
-    }
-        
-        actualizarFiltros();
-    }, [funciones,loading]);
-    
-    const actualizarFiltros= () =>{
-        setDisp2d(false);
-        setDisp3d(false);
-        setDispSub(false);      
-        setDispDob(false);
-        setDimension("");
-        setDoblaje("");
-        const nuevalista = [];
-        funciones.forEach((funcion) => {
-            if (funcion.mes === fechaCalendario.mes && funcion.año === fechaCalendario.año){
-                if (funcion.dia === fechaCalendario.dia ) {
-                    if (funcion.dimension === '2d') {
-                        setDisp2d(true);
-                    }
-                    if (funcion.dimension === '3d') {
-                        setDisp3d(true);
-                    }
-                    if (funcion.doblaje === 'Sub') {
-                        setDispSub(true);
-                    }
-                    if (funcion.doblaje === 'Dob') {
-                        setDispDob(true);
-                    }
-                }
-                nuevalista.push(funcion.dia);
-                setDiasDisponibles(nuevalista);
-            }
-            
-        });
-    }
-    const handleFechaCalendario = (dia, mes, año) => {
-        setFechaCalendario({ dia: dia,mes: mes,año: año});
-        setDiasDisponibles([]);
-    }
-    useEffect(() => {
-        actualizarFiltros();
-    }, [fechaCalendario]);
-
-
-
-    
-    const filteredFunciones = funciones.filter(funcion => {
-
-        const dimensionMatch = dimension ? funcion.dimension === dimension : true;
-        const doblajeMatch = doblaje ? funcion.doblaje === doblaje : true;
-        const fechaCalendarioMatch = (funcion.dia === fechaCalendario.dia && funcion.mes === fechaCalendario.mes && funcion.año === fechaCalendario.año);
-        return dimensionMatch && doblajeMatch && fechaCalendarioMatch;  
-    });
-
-    
     return (
         <div className='MayorContainer'>
             <div className='InfoContainer'>
@@ -185,29 +110,48 @@ const Descripcion = ({ idPelicula, pelicula = defPelicula, credits = defCredits,
                     <h3>Rating: {pelicula.vote_average !== undefined ? pelicula.vote_average.toFixed(1) : '0.0'}/10</h3>
                 </div>
                 <div className='CalendarioContainer'>
-                    {videos && videos.results.length > 0 && <MovieTrailer videoKey={videos.results[0].key} />}
+    {videos && videos.results.length > 0 && <MovieTrailer videoKey={videos.results[0].key} />}
+    
+    {/* Sección de reviews */}
+    <h1>Opiniones</h1>
+    {error.message && <p className="error">{error.message}</p>} {/* Mostrar errores */}
 
-                    {error.message? <p>{error.message}</p>:loading ? <p>Cargando...</p>:funcionStatus? <p>{funcionStatus}</p>
-                    :<>
-                        <Calendario diaInicial={fecha.getDate()} mesInicial={fecha.getMonth() + 1} añoInicial={fecha.getFullYear()} cambioDeFecha={handleFechaCalendario} diasDisponibles={diasDisponibles}/>
-                        <div className='FiltrosContainer'>
-                        <div className="button-group">
-                            {disp2d? <div className={`button ${dimension === "2d" ? "seleccionado" : "noseleccionado"}`} onClick={dimension === "2d" ? () => setDimension("") : () => setDimension("2d")}>2D</div> :<div className="button nodisponible">2D</div> }
-                            {disp3d? <div className={`button ${dimension === "3d" ? "seleccionado" : "noseleccionado"}`} onClick={dimension === "3d" ? () => setDimension("") : () => setDimension("3d")}>3D</div> :<div className="button nodisponible">3D</div> }
-                        </div>
-                        <div className="button-group">
-                            {dispSub? <div className={`button ${doblaje === "Sub" ? "seleccionado" : "noseleccionado"}`} onClick={doblaje === "Sub" ? () => setDoblaje("") : () => setDoblaje("Sub")}>SUB</div> :<div className="button nodisponible">SUB</div> }
-                            {dispDob? <div className={`button ${doblaje === "Dob" ? "seleccionado" : "noseleccionado"}`} onClick={doblaje === "Dob" ? () => setDoblaje("") : () => setDoblaje("Dob")}>DOB</div> :<div className="button nodisponible">DOB</div> }
-                        </div>
-                        </div>
-                        <div className='FuncionesContainer'>
-                            {filteredFunciones.map((funcion, key)  => {
-                                return <Link key={key} className='funcionlink' to={status?`/reserva?id=${funcion._id}`: "/plssignin"}><div className="button funcion">{funcion.hora}</div></Link>
-                            })}
-                        </div>
-                    </>
-                    }
+    <div className="reviewsSection">
+    {loading ? (
+        <p>Cargando reviews...</p>
+    ) : (
+        <div className="reviewsGrid">
+            {reviews.map((review, index) => (
+                <div key={index} className="reviewCard">
+                    <p><strong>{"'"}{review.contenido}{"'"}</strong></p>
+                    
+                    <p>{"-"}{review.usuarioEmail.split('@')[0]}</p>
                 </div>
+            ))}
+        </div>
+    )}
+</div>
+
+
+    {/* Nueva sección para el search box y el botón */}
+    <div className="searchBoxContainer">
+        {/* Campo para dejar una review */}
+        {status ? (
+            <div className="newReview">
+                <textarea
+                    value={newReview}
+                    onChange={(e) => setNewReview(e.target.value)}
+                    placeholder="Escribe tu opinión..."
+                />
+                <button onClick={publicarReview}>Publicar Review</button>
+            </div>
+        ) : (
+            <p>Para publicar una review, <Link to="/login">inicia sesión</Link></p>
+        )}
+    </div>
+</div>
+
+                
             </div>
         </div>
     );

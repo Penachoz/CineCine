@@ -57,7 +57,7 @@ const Cartelera = () => {
             <div key={pelicula.id} className="movie" onClick={() => handleMovieClick(pelicula.id)}>
               <Link to={`/Pelicula?id=${pelicula.id}`}>
                 <img
-                  src={`https://image.tmdb.org/t/p/w300/${pelicula.poster_path}`}
+                  src={`https://image.tmdb.org/t/p/original/${pelicula.poster_path}`}
                   alt={pelicula.title}
                 />
               </Link>

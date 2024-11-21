@@ -6,23 +6,23 @@ import cinePlusApi from "../../../api/cinePlusApi.js";
 
 export const registerUser = (email, password) => {
     return async (dispatch) => {
-        
         try {
-            const {data} = await cinePlusApi.post('/crearUsuario', {email, password});
-            const response = await createUserWithEmailAndPassword(auth,email, password);  
-            if(response && data){
+            const { data } = await cinePlusApi.post('usuarios/crearUsuario', { email, password });
+            const response = await createUserWithEmailAndPassword(auth, email, password);
+            if (response && data) {
                 console.log(response);
-                dispatch(register({email: response.user.email}));
-                return Promise.resolve(response)
-            }else{
-                throw new Error('Error al registrar usuario')
+                dispatch(register({ email: response.user.email }));
+                return Promise.resolve(response);
+            } else {
+                throw new Error('Error al registrar usuario');
             }
-        }catch (error) {
-            return Promise.reject(error)
+        } catch (error) {
+            console.error('Error durante el registro:', error);
+            return Promise.reject(error);
         }
-
     }
 }
+
 
 
 export const loginUser = (email, password) => {
@@ -53,7 +53,7 @@ export const loginGoogle = () => {
             console.log("Usuario autenticado con Google:", user);
 
             try {
-                const { data } = await cinePlusApi.post('/crearUsuarioGoogle', { email: user.email });
+                const { data } = await cinePlusApi.post('usuarios/crearUsuario', { email: user.email, password : "loaslaosa"});
                 dispatch(login({ email: user.email }));
                 return Promise.resolve(result);
             } catch (error) {

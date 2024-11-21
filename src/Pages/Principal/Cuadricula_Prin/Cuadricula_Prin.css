@@ -7,7 +7,7 @@ body {
   .container {
     margin: auto; /* Margen superior e inferior de 50px y centrado horizontal */
     max-width: 70%; /* Ancho máximo del contenedor */
-    background-color: #D3DEE8; /* Color de fondo */
+    background-color: #669675; /* Color de fondo */
     border-radius: 20px; /* Bordes redondeados */
     padding: 40px; /* Espaciado interno aumentado */
   }

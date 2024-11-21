@@ -5,7 +5,7 @@ import Principal from "../Principal/Principal";
 import Pelicula_info from "../Pelicula_info/Pelicula_info";
 import Estrenos from "../Estrenos/Estrenos";
 import { PlsSignIn } from "../../Components/Shared/PorfavorInicieSesion/PlsSignIn.jsx";
-import { Orden } from "../Orden/Orden";
+
 import { useState, useEffect } from "react";
 import { Comidas } from "../Comidas/Comidas";
 import { Navigation } from "../../Components/Shared/BarraNavegacion/BarraNavegacion";
@@ -19,6 +19,7 @@ import { useDispatch } from "react-redux";
 import { checkingCredentials } from "../../redux/slices/auth/AuthSlice.js";
 import Reserva from "../Reserva/Reserva.jsx";
 import { About } from "../About/About.jsx";
+import {Reviews} from "../Reviews/Reviews.jsx"
 function App() {
   const [allProducts, setAllProducts] = useState([]);
   const [total, setTotal] = useState(0);
@@ -151,18 +152,11 @@ function App() {
         />
         <Route element={<PrivateRoutes />}>
           <Route
-            path="/Perfil/Orden"
+            path="/Perfil/Reviews"
             element={
               <div>
-                <Navigation
-                  allProducts={allProducts}
-                  setAllProducts={setAllProducts}
-                  total={total}
-                  setTotal={setTotal}
-                  countProducts={countProducts}
-                  setCountProducts={setCountProducts}
-                />
-                <Orden allProducts={allProducts} total={total} />
+                <Navigation></Navigation>
+                 <Reviews />
               </div>
             }
           />

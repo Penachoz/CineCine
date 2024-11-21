@@ -1,17 +1,17 @@
 import './Estrenos.css'
-import { Navigation } from "../../Components/Shared/BarraNavegacion/BarraNavegacion"
+
 import { Link } from 'react-router-dom';
 import {useState,useEffect} from 'react'
 import axios from 'axios';
 const Estrenos = ()=>{
     const [peliculas, setPeliculas] = useState([]);
-    const numeroDePeliculas = 30; // Número de películas que deseas mostrar
+    const numeroDePeliculas = 100; // Número de películas que deseas mostrar
     
     useEffect(() => {
       const fetchPeliculas = async () => {
         try {
           const response = await axios.get(
-            'https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&language=en-US&page=1&sort_by=primary_release_date.desc',
+            'https://api.themoviedb.org/3/movie/top_rated',
             {
               params: {
                 api_key: '3b24534de9f3e0c2935e3edd6446ad0c',
@@ -36,7 +36,7 @@ const Estrenos = ()=>{
             <div className='separador'></div>
 
             <div className="container1">
-                <h1 className='estrenosTitulo'>Próximamente</h1>
+                <h1 className='estrenosTitulo'>Top Rated</h1>
 
 
                 <div className="grid">

@@ -28,7 +28,7 @@ const Carrusel = ({numeroDePeliculas = 7, pageSize = 20}) => {
         <div key={pelicula.id} className="CarruselMovie">
           <Link className='aCarruselMovie' to={`Pelicula?id=${pelicula.id}`}>
             <img className='CarruselMovieImg'
-              src={`https://image.tmdb.org/t/p/w300/${pelicula.poster_path}`}
+              src={`https://image.tmdb.org/t/p/original/${pelicula.poster_path}`}
               alt={pelicula.title}
             />
           </Link>
