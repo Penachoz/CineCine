@@ -53,11 +53,26 @@ export const loginGoogle = () => {
             console.log("Usuario autenticado con Google:", user);
 
             try {
-                const { data } = await cinePlusApi.post('usuarios/crearUsuario', { email: user.email, password : "loaslaosa"});
-                dispatch(login({ email: user.email }));
+                // Verifica si el usuario ya existe en la base de datos
+                const { data: existingUser } = await cinePlusApi.get(`usuarios/verificarUsuario/${user.email}`);
+
+                if (existingUser) {
+                    // Si el usuario ya existe, inicia sesión directamente
+                    console.log("Usuario ya registrado en la base de datos:", existingUser);
+                    dispatch(login({ email: user.email }));
+                } else {
+                    // Si el usuario no existe, regístralo
+                    const { data: newUser } = await cinePlusApi.post('usuarios/crearUsuario', {
+                        email: user.email,
+                        password: "loaslaosa" // O un valor más adecuado
+                    });
+                    console.log("Usuario registrado en la base de datos:", newUser);
+                    dispatch(login({ email: user.email }));
+                }
+
                 return Promise.resolve(result);
             } catch (error) {
-                console.error("Error al registrar/verificar usuario en la base de datos:", error.message);
+                console.error("Error al verificar/registrar usuario en la base de datos:", error.message);
                 await signOut(auth);
                 return Promise.reject(error);
             }
@@ -65,8 +80,9 @@ export const loginGoogle = () => {
             console.error("Error al iniciar sesión con Google:", error.message);
             return Promise.reject(error);
         }
-    }
-}
+    };
+};
+
 
 
 export const cerrarSesion = () => {

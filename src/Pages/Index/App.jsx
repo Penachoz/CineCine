@@ -17,7 +17,7 @@ import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "../../firebase/config";
 import { useDispatch } from "react-redux";
 import { checkingCredentials } from "../../redux/slices/auth/AuthSlice.js";
-import Reserva from "../Reserva/Reserva.jsx";
+
 import { About } from "../About/About.jsx";
 import {Reviews} from "../Reviews/Reviews.jsx"
 function App() {
@@ -118,22 +118,7 @@ function App() {
             </div>
           }
         />
-        <Route
-          path="/Reserva"
-          element={
-            <div>
-              <Navigation
-                allProducts={allProducts}
-                setAllProducts={setAllProducts}
-                total={total}
-                setTotal={setTotal}
-                countProducts={countProducts}
-                setCountProducts={setCountProducts}
-              />
-              <Reserva />
-            </div>
-          }
-        />
+        
         <Route
           path="/About"
           element={

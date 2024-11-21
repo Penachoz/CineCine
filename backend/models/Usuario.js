@@ -9,12 +9,7 @@ const UsuarioSchema = Schema({
     password:{
         type: String,
         required: true
-    },
-    orden: 
-        {
-            type: Schema.Types.ObjectId,
-            ref: 'Orden'
-        }
+    }
 });
 
 module.exports = model('Usuario',UsuarioSchema);

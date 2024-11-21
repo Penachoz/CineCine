@@ -1,5 +1,5 @@
 import './Estrenos.css'
-
+//Esto termino siendo Top Rated Movies
 import { Link } from 'react-router-dom';
 import {useState,useEffect} from 'react'
 import axios from 'axios';
